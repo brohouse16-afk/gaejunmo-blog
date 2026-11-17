@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://brohouse16-afk.github.io/gaejunmo-blog/sitemap.xml
