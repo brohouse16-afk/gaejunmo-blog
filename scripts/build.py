@@ -24,7 +24,13 @@ def guess(cat,title):
 def strip(s): return re.sub(r"\s+"," ",re.sub(r"<[^>]+>","",s)).strip()
 def main():
     src=sys.argv[1] if len(sys.argv)>1 else None
-    x=open(src,encoding="utf-8").read() if src else urllib.request.urlopen(urllib.request.Request(RSS,headers={"User-Agent":"Mozilla/5.0"}),timeout=30).read().decode("utf-8")
+    try:
+        x=open(src,encoding="utf-8").read() if src else urllib.request.urlopen(urllib.request.Request(RSS,headers={"User-Agent":"Mozilla/5.0"}),timeout=30).read().decode("utf-8")
+    except Exception as ex:
+        # 네이버가 막거나 일시 오류면 기존 페이지를 그대로 두고 조용히 끝냄(매일 실패 메일 방지)
+        print(f"::warning::RSS 받기 실패, 이번 회차 건너뜀: {ex}"); return
+    if "<item>" not in x:
+        print("::warning::RSS에 글이 없음(차단 화면일 수 있음), 이번 회차 건너뜀"); return
     posts=[]
     for it in re.findall(r"<item>(.*?)</item>",x,re.S):
         g=lambda tag: (re.search(rf"<{tag}>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?</{tag}>",it,re.S) or [None,""])[1]
