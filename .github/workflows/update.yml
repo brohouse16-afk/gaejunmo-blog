@@ -1,0 +1,17 @@
+name: update-hub
+on:
+  schedule: [{cron: "0 21 * * *"}]
+  workflow_dispatch:
+permissions: {contents: write}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/build.py
+      - run: |
+          git config user.name "gaejunmo-bot"; git config user.email "actions@users.noreply.github.com"
+          if git diff --quiet -- posts.json; then echo "no new posts"; exit 0; fi
+          git add -A; git commit -m "chore: 블로그 새 글 반영"; git push
+          KEY=$(ls *.txt | grep -v robots | head -1 | sed 's/\.txt$//')
+          [ -n "$KEY" ] && curl -s "https://api.indexnow.org/indexnow?url=https://brohouse16-afk.github.io/gaejunmo-blog/&key=$KEY" || true
